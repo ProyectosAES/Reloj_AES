@@ -19,7 +19,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        display: ['Oswald', 'sans-serif'], // Fuente para números grandes
+                        display: ['Oswald', 'sans-serif'],
                     },
                     colors: {
                         miami: '#0635AB',    /* Azul Oscuro */
@@ -31,7 +31,7 @@
                     },
                     keyframes: {
                         slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '0%': { opacity: '0', transform: 'translateY(20px)' }, /* Reducido para móvil */
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         }
                     }
@@ -45,7 +45,7 @@
 
     <style>
         body {
-            background-color: #f0f4f8; /* Blanco grisáceo muy suave para contraste */
+            background-color: #f0f4f8;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
@@ -54,20 +54,30 @@
             justify-content: center;
         }
 
-        /* El contenedor principal con sombra profunda */
+        /* Contenedor adaptativo: Columna en móvil, Fila en escritorio */
         .dashboard-container {
-            width: 98%;
-            height: 90%; /* Dejamos un pequeño margen */
+            width: 100%;
+            height: 100%;
             max-width: 1800px;
-            max-height: 500px; /* Limitamos la altura para mantener aspecto wide */
+            max-height: 100vh;
             display: flex;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(6, 53, 171, 0.25);
+            flex-direction: column; /* Defecto móvil */
             background: white;
+            overflow: hidden;
         }
 
-        /* Tipografía Oswald para números tabulares */
+        /* Ajustes para escritorio */
+        @media (min-width: 768px) {
+            .dashboard-container {
+                width: 98%;
+                height: 90%;
+                max-height: 500px;
+                flex-direction: row;
+                border-radius: 24px;
+                box-shadow: 0 25px 50px -12px rgba(6, 53, 171, 0.25);
+            }
+        }
+
         .numbers {
             font-feature-settings: "tnum";
             font-variant-numeric: tabular-nums;
@@ -79,53 +89,54 @@
     <!-- Panel Principal -->
     <div class="dashboard-container">
         
-        <!-- SECCIÓN IZQUIERDA: MIAMI (Estático, Oscuro) -->
-        <section class="w-1/3 bg-miami text-white flex flex-col relative z-10">
-            <!-- Patrón de fondo sutil -->
+        <!-- SECCIÓN MIAMI (Estático) -->
+        <!-- Móvil: w-full h-2/3 | Escritorio: w-1/3 h-full -->
+        <section class="w-full h-[65%] md:w-1/3 md:h-full bg-miami text-white flex flex-col relative z-10 transition-all duration-300">
+            <!-- Patrón de fondo -->
             <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             
-            <div class="relative z-10 flex-1 flex flex-col justify-center items-center p-8 text-center border-r border-white/10">
+            <div class="relative z-10 flex-1 flex flex-col justify-center items-center p-4 md:p-8 text-center md:border-r border-white/10">
                 
-                <div class="flex items-center gap-2 mb-6 opacity-80">
-                    <span class="bg-white/20 px-3 py-1 rounded text-xs font-bold tracking-widest uppercase">Principal</span>
-                    <h2 class="text-2xl font-light tracking-wide uppercase">Miami</h2>
+                <div class="flex items-center gap-2 mb-4 md:mb-6 opacity-80">
+                    <span class="bg-white/20 px-2 py-0.5 md:px-3 md:py-1 rounded text-[10px] md:text-xs font-bold tracking-widest uppercase">Principal</span>
+                    <h2 class="text-xl md:text-2xl font-light tracking-wide uppercase">Miami</h2>
                 </div>
 
-                <div class="numbers text-8xl lg:text-9xl font-bold tracking-tight leading-none mb-4">
+                <!-- Hora Miami (Responsiva) -->
+                <div class="numbers text-[5rem] sm:text-8xl lg:text-9xl font-bold tracking-tight leading-none mb-2 md:mb-4">
                     <span id="miami-time">--:--</span>
                 </div>
 
-                <div class="flex items-center gap-4 text-blue-200">
-                    <span class="numbers text-4xl" id="miami-seconds">--</span>
-                    <span class="text-2xl font-bold text-accent bg-white px-2 rounded" id="miami-ampm">--</span>
+                <div class="flex items-center gap-3 md:gap-4 text-blue-200">
+                    <span class="numbers text-3xl md:text-4xl" id="miami-seconds">--</span>
+                    <span class="text-xl md:text-2xl font-bold text-accent bg-white px-2 rounded" id="miami-ampm">--</span>
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-white/10 w-2/3">
-                    <p class="text-lg text-blue-100 uppercase tracking-widest font-light" id="miami-date">--</p>
+                <div class="mt-4 md:mt-8 pt-4 md:pt-6 border-t border-white/10 w-2/3">
+                    <p class="text-sm md:text-lg text-blue-100 uppercase tracking-widest font-light" id="miami-date">--</p>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN DERECHA: CARRUSEL (Dinámico, Azul Claro) -->
-        <section class="w-2/3 bg-world text-white flex flex-col relative overflow-hidden">
+        <!-- SECCIÓN CARRUSEL (Estilo Ticker en Móvil) -->
+        <!-- Móvil: w-full h-1/3 | Escritorio: w-2/3 h-full -->
+        <section class="w-full h-[35%] md:w-2/3 md:h-full bg-world text-white flex flex-col relative overflow-hidden shadow-inner md:shadow-none z-20">
             
             <!-- Contenido del Carrusel -->
-            <div id="carousel-content" class="flex-1 flex flex-col justify-center items-center p-8 text-center relative z-10">
+            <div id="carousel-content" class="flex-1 flex flex-col justify-center items-center p-4 md:p-8 text-center relative z-10">
                 <!-- Inyectado por JS -->
             </div>
 
             <!-- Indicadores Visuales (Puntos) -->
-            <div class="absolute top-6 right-8 flex gap-2" id="carousel-indicators">
+            <div class="absolute top-2 right-4 md:top-6 md:right-8 flex gap-1.5 md:gap-2" id="carousel-indicators">
                 <!-- Inyectado por JS -->
             </div>
 
-            <!-- Barra de Progreso Inferior (Roja) -->
-            <div class="h-2 bg-black/20 w-full mt-auto relative">
+            <!-- Barra de Progreso Inferior -->
+            <div class="h-1.5 md:h-2 bg-black/20 w-full mt-auto relative">
                 <div class="h-full bg-accent transition-all duration-100 ease-linear shadow-[0_0_15px_rgba(146,24,39,0.8)]" id="progress-bar" style="width: 0%"></div>
             </div>
             
-            <!-- Decoración de fondo -->
-            <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
         </section>
         
     </div>
@@ -183,30 +194,41 @@
             const data = getTimeInZone(loc.zone);
             const container = document.getElementById('carousel-content');
 
-            // Layout horizontal para el país rotativo: Bandera/Nombre a la izq, Hora gigante a la derecha
+            // Layout Adaptativo Inyectado
+            // Flex Row en móvil y escritorio, pero con tamaños muy diferentes
             container.innerHTML = `
-                <div class="animate-slide-up flex flex-row items-center justify-around w-full px-12 gap-8">
+                <div class="animate-slide-up flex flex-row items-center justify-between w-full px-2 md:px-12 gap-2 md:gap-8 h-full">
                     
-                    <div class="flex flex-col items-start text-left w-1/3">
-                        <div class="flex items-center gap-3 mb-2">
+                    <!-- IZQUIERDA: Info País -->
+                    <div class="flex flex-col items-start text-left w-1/2 md:w-1/3">
+                        <div class="hidden md:flex items-center gap-3 mb-2">
                              <i data-lucide="globe" class="w-6 h-6 text-white/70"></i>
                              <span class="text-sm font-bold tracking-widest uppercase text-white/60">Zona Horaria</span>
                         </div>
-                        <h2 class="text-5xl lg:text-6xl font-bold uppercase tracking-tight leading-none mb-2 text-white drop-shadow-md">
+                        
+                        <!-- Nombre País: Pequeño en móvil, Enorme en escritorio -->
+                        <h2 class="text-2xl sm:text-3xl lg:text-6xl font-bold uppercase tracking-tight leading-none mb-1 md:mb-2 text-white drop-shadow-md truncate w-full">
                             ${loc.country}
                         </h2>
-                        <p class="text-2xl text-blue-200 font-light tracking-wide">${loc.city}</p>
+                        
+                        <!-- Ciudad: Muy sutil en móvil -->
+                        <p class="text-xs sm:text-lg md:text-2xl text-blue-200 font-light tracking-wide truncate w-full">${loc.city}</p>
                     </div>
 
-                    <div class="flex flex-col items-end w-2/3">
-                        <div class="numbers text-9xl lg:text-[10rem] font-display font-bold leading-none tracking-tighter drop-shadow-lg">
+                    <!-- DERECHA: Hora -->
+                    <div class="flex flex-col items-end w-1/2 md:w-2/3">
+                        <!-- Hora: Mediana en móvil (noticias), Gigante en escritorio -->
+                        <div class="numbers text-5xl sm:text-6xl lg:text-[10rem] font-display font-bold leading-none tracking-tighter drop-shadow-lg">
                             ${data.fullTime}
                         </div>
-                        <div class="flex items-center gap-4 mt-2">
-                            <span class="text-3xl font-bold text-accent bg-white px-3 py-0.5 rounded shadow-lg transform -skew-x-12 inline-block">
+                        
+                        <div class="flex items-center gap-2 md:gap-4 mt-1 md:mt-2">
+                            <!-- AMPM Badge -->
+                            <span class="text-sm md:text-3xl font-bold text-accent bg-white px-1.5 py-0.5 md:px-3 md:py-0.5 rounded shadow-lg transform -skew-x-12 inline-block">
                                 <span class="transform skew-x-12 inline-block">${data.ampm}</span>
                             </span>
-                            <span class="text-2xl uppercase tracking-widest opacity-80">${data.date}</span>
+                            <!-- Fecha sutil -->
+                            <span class="text-[10px] md:text-2xl uppercase tracking-widest opacity-80 truncate max-w-[120px] md:max-w-none">${data.date}</span>
                         </div>
                     </div>
 
@@ -221,7 +243,7 @@
         function updateIndicators() {
             const container = document.getElementById('carousel-indicators');
             container.innerHTML = locations.map((_, idx) => `
-                <div class="h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/30'}"></div>
+                <div class="h-1.5 md:h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-4 md:w-8 bg-white' : 'w-1.5 md:w-2 bg-white/30'}"></div>
             `).join('');
         }
 
@@ -233,14 +255,14 @@
             document.getElementById('miami-ampm').innerText = miami.ampm;
             document.getElementById('miami-date').innerText = miami.date;
 
-            // Actualizar Carrusel (solo tiempo si no ha cambiado el slide)
+            // Actualizar Carrusel
             const loc = locations[currentIndex];
             const data = getTimeInZone(loc.zone);
             
-            // Intentamos actualizar solo el texto para evitar reinicio de animaciones cada segundo
             const container = document.getElementById('carousel-content');
             if (container.children.length > 0) {
-                 const timeDisplay = container.querySelector('.numbers.text-9xl');
+                 // Selector ajustado para abarcar tanto el tamaño móvil como escritorio
+                 const timeDisplay = container.querySelector('.numbers');
                  if(timeDisplay && timeDisplay.innerText !== data.fullTime) timeDisplay.innerText = data.fullTime;
             }
 
@@ -263,5 +285,4 @@
         });
     </script>
 </body>
-
 </html>
