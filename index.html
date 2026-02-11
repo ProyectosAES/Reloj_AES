@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reloj Mundial - Panel Unificado</title>
+    
+    <!-- Fuentes: Inter para textos y 'Oswald' para un look más condensado y grande en números -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif'], // Fuente para números grandes
+                    },
+                    colors: {
+                        miami: '#0635AB',    /* Azul Oscuro */
+                        world: '#2F57B7',    /* Azul Claro */
+                        accent: '#921827',   /* Rojo */
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(40px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #f0f4f8; /* Blanco grisáceo muy suave para contraste */
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* El contenedor principal con sombra profunda */
+        .dashboard-container {
+            width: 98%;
+            height: 90%; /* Dejamos un pequeño margen */
+            max-width: 1800px;
+            max-height: 500px; /* Limitamos la altura para mantener aspecto wide */
+            display: flex;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(6, 53, 171, 0.25);
+            background: white;
+        }
+
+        /* Tipografía Oswald para números tabulares */
+        .numbers {
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Panel Principal -->
+    <div class="dashboard-container">
+        
+        <!-- SECCIÓN IZQUIERDA: MIAMI (Estático, Oscuro) -->
+        <section class="w-1/3 bg-miami text-white flex flex-col relative z-10">
+            <!-- Patrón de fondo sutil -->
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            
+            <div class="relative z-10 flex-1 flex flex-col justify-center items-center p-8 text-center border-r border-white/10">
+                
+                <div class="flex items-center gap-2 mb-6 opacity-80">
+                    <span class="bg-white/20 px-3 py-1 rounded text-xs font-bold tracking-widest uppercase">Base</span>
+                    <h2 class="text-2xl font-light tracking-wide uppercase">Miami</h2>
+                </div>
+
+                <div class="numbers text-8xl lg:text-9xl font-bold tracking-tight leading-none mb-4">
+                    <span id="miami-time">--:--</span>
+                </div>
+
+                <div class="flex items-center gap-4 text-blue-200">
+                    <span class="numbers text-4xl" id="miami-seconds">--</span>
+                    <span class="text-2xl font-bold text-accent bg-white px-2 rounded" id="miami-ampm">--</span>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-white/10 w-2/3">
+                    <p class="text-lg text-blue-100 uppercase tracking-widest font-light" id="miami-date">--</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DERECHA: CARRUSEL (Dinámico, Azul Claro) -->
+        <section class="w-2/3 bg-world text-white flex flex-col relative overflow-hidden">
+            
+            <!-- Contenido del Carrusel -->
+            <div id="carousel-content" class="flex-1 flex flex-col justify-center items-center p-8 text-center relative z-10">
+                <!-- Inyectado por JS -->
+            </div>
+
+            <!-- Indicadores Visuales (Puntos) -->
+            <div class="absolute top-6 right-8 flex gap-2" id="carousel-indicators">
+                <!-- Inyectado por JS -->
+            </div>
+
+            <!-- Barra de Progreso Inferior (Roja) -->
+            <div class="h-2 bg-black/20 w-full mt-auto relative">
+                <div class="h-full bg-accent transition-all duration-100 ease-linear shadow-[0_0_15px_rgba(146,24,39,0.8)]" id="progress-bar" style="width: 0%"></div>
+            </div>
+            
+            <!-- Decoración de fondo -->
+            <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        </section>
+        
+    </div>
+
+    <script>
+        const locations = [
+            { id: 'col', city: 'Bogotá', country: 'COLOMBIA', zone: 'America/Bogota' },
+            { id: 'ecu', city: 'Quito', country: 'ECUADOR', zone: 'America/Guayaquil' },
+            { id: 'ven', city: 'Caracas', country: 'VENEZUELA', zone: 'America/Caracas' },
+            { id: 'mex', city: 'CDMX', country: 'MÉXICO', zone: 'America/Mexico_City' },
+            { id: 'bol', city: 'La Paz', country: 'BOLIVIA', zone: 'America/La_Paz' },
+            { id: 'nic', city: 'Managua', country: 'NICARAGUA', zone: 'America/Managua' },
+            { id: 'bra', city: 'Brasilia', country: 'BRASIL', zone: 'America/Sao_Paulo' },
+            { id: 'dom', city: 'S. Domingo', country: 'R. DOMINICANA', zone: 'America/Santo_Domingo' },
+            { id: 'pan', city: 'Panamá', country: 'PANAMÁ', zone: 'America/Panama' },
+            { id: 'per', city: 'Lima', country: 'PERÚ', zone: 'America/Lima' }
+        ];
+
+        let currentIndex = 0;
+        const ROTATION_TIME = 5000;
+        let rotationStart = Date.now();
+
+        function getTimeInZone(timeZone) {
+            try {
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('es-MX', {
+                    timeZone: timeZone, hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true
+                });
+                const parts = formatter.formatToParts(now);
+                const getPart = (type) => (parts.find(p => p.type === type) || {}).value || '';
+
+                let hour = getPart('hour');
+                if (hour.length === 1) hour = '0' + hour;
+                let dayPeriod = getPart('dayPeriod').replace(/\./g, '').toUpperCase().trim();
+                if (!dayPeriod) dayPeriod = parseInt(hour) >= 12 ? 'PM' : 'AM';
+
+                const dateFormatter = new Intl.DateTimeFormat('es-ES', {
+                    timeZone: timeZone, weekday: 'long', day: 'numeric', month: 'long'
+                });
+                let dateStr = dateFormatter.format(now);
+
+                return {
+                    fullTime: `${hour}:${getPart('minute')}`,
+                    seconds: getPart('second'),
+                    ampm: dayPeriod,
+                    date: dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                };
+            } catch (e) {
+                return { fullTime: '--:--', seconds: '--', ampm: '--', date: '--' };
+            }
+        }
+
+        function updateCarouselDisplay() {
+            const loc = locations[currentIndex];
+            const data = getTimeInZone(loc.zone);
+            const container = document.getElementById('carousel-content');
+
+            // Layout horizontal para el país rotativo: Bandera/Nombre a la izq, Hora gigante a la derecha
+            container.innerHTML = `
+                <div class="animate-slide-up flex flex-row items-center justify-around w-full px-12 gap-8">
+                    
+                    <div class="flex flex-col items-start text-left w-1/3">
+                        <div class="flex items-center gap-3 mb-2">
+                             <i data-lucide="globe" class="w-6 h-6 text-white/70"></i>
+                             <span class="text-sm font-bold tracking-widest uppercase text-white/60">Zona Horaria</span>
+                        </div>
+                        <h2 class="text-5xl lg:text-6xl font-bold uppercase tracking-tight leading-none mb-2 text-white drop-shadow-md">
+                            ${loc.country}
+                        </h2>
+                        <p class="text-2xl text-blue-200 font-light tracking-wide">${loc.city}</p>
+                    </div>
+
+                    <div class="flex flex-col items-end w-2/3">
+                        <div class="numbers text-9xl lg:text-[10rem] font-display font-bold leading-none tracking-tighter drop-shadow-lg">
+                            ${data.fullTime}
+                        </div>
+                        <div class="flex items-center gap-4 mt-2">
+                            <span class="text-3xl font-bold text-accent bg-white px-3 py-0.5 rounded shadow-lg transform -skew-x-12 inline-block">
+                                <span class="transform skew-x-12 inline-block">${data.ampm}</span>
+                            </span>
+                            <span class="text-2xl uppercase tracking-widest opacity-80">${data.date}</span>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            
+            updateIndicators();
+            lucide.createIcons();
+            rotationStart = Date.now();
+        }
+
+        function updateIndicators() {
+            const container = document.getElementById('carousel-indicators');
+            container.innerHTML = locations.map((_, idx) => `
+                <div class="h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-8 bg-white' : 'w-2 bg-white/30'}"></div>
+            `).join('');
+        }
+
+        function updateClocks() {
+            // Actualizar Miami
+            const miami = getTimeInZone('America/New_York');
+            document.getElementById('miami-time').innerText = miami.fullTime;
+            document.getElementById('miami-seconds').innerText = miami.seconds;
+            document.getElementById('miami-ampm').innerText = miami.ampm;
+            document.getElementById('miami-date').innerText = miami.date;
+
+            // Actualizar Carrusel (solo tiempo si no ha cambiado el slide)
+            const loc = locations[currentIndex];
+            const data = getTimeInZone(loc.zone);
+            
+            // Intentamos actualizar solo el texto para evitar reinicio de animaciones cada segundo
+            const container = document.getElementById('carousel-content');
+            if (container.children.length > 0) {
+                 const timeDisplay = container.querySelector('.numbers.text-9xl');
+                 if(timeDisplay && timeDisplay.innerText !== data.fullTime) timeDisplay.innerText = data.fullTime;
+            }
+
+            // Barra de progreso
+            const elapsed = Date.now() - rotationStart;
+            const progress = Math.min((elapsed / ROTATION_TIME) * 100, 100);
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % locations.length;
+            updateCarouselDisplay();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCarouselDisplay();
+            updateClocks();
+            setInterval(updateClocks, 1000);
+            setInterval(nextSlide, ROTATION_TIME);
+        });
+    </script>
+</body>
+</html>
